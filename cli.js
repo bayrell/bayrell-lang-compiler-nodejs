@@ -6,8 +6,10 @@ if (cmd == "watch")
 {
 	var Watch = require("./watch.js");
 	var app = new Watch.App( process.cwd() );
-	app.loadConfig();
-	app.run();
+	if (app.loadConfig())
+	{
+		app.run();
+	}
 }
 
 else

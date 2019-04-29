@@ -1,24 +1,27 @@
 {
-  "description": "Bayrell Lang Compiler for nodejs",
-  "license": "Apache-2.0",
-  "contributors": [
-    {
-      "name": "Ildar Bikmamatov",
-      "email": "support@bayrell.org"
-    }
-  ],
-  "files": [
-    "*.js"
-  ],
-  "bin": {
-    "bayrell-lang-nodejs": "./cli.js"
-  },
-  "main": "index.js",
-  "name": "bayrell-lang-compiler",
-  "version": "0.1.1",
-  "dependencies": {
-	"bayrell-lang-nodejs": "^0.7.2",
-	"bayrell-parser-nodejs": "^0.7.2",
-	"bayrell-runtime-nodejs": "^0.7.2"
-  }
+	"description": "Bayrell Lang Compiler for nodejs",
+	"license": "Apache-2.0",
+	"contributors": [
+	{
+		"name": "Ildar Bikmamatov",
+		"email": "support@bayrell.org"
+	}
+	],
+	"files": [
+		"*.js"
+	],
+	"bin": {
+		"bayrell-lang-nodejs": "./cli.js"
+	},
+	"main": "index.js",
+	"name": "bayrell-lang-compiler",
+	"version": "0.1.1",
+	"dependencies": {
+		"bayrell-lang-nodejs": "^0.7.2",
+		"bayrell-parser-nodejs": "^0.7.2",
+		"bayrell-common-nodejs": "^0.7.0",
+		"bayrell-runtime-nodejs": "^0.7.2",
+		"node-watch": "^0.6.2",
+		"shelljs": "^0.7.0"
+	}
 }

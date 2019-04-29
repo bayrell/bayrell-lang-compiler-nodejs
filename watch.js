@@ -3,6 +3,7 @@
 var fs = require('fs');
 var path = require('path');
 var watch = require('node-watch');
+var shelljs = require('shelljs');
 var Runtime = require('bayrell-runtime-nodejs');
 var BayrellLang = require('bayrell-lang-nodejs');
 
@@ -46,54 +47,68 @@ class App
 	}
 	loadConfig()
 	{
-		var content = fs.readFileSync(this.current_path + "/project.json").toString();
-		this.init( JSON.parse(content) );
+		var json_path = this.current_path + "/project.json";
+		if (!fs.existsSync(json_path))
+		{
+			console.log("Error. File " + json_path + " not found.");
+			return false;
+		}
+		var success = false;
+		var content = fs.readFileSync(json_path).toString();
+		try
+		{
+			this.init( JSON.parse(content) );
+			success = true;
+		}
+		catch(e)
+		{
+			console.log(e.toString());
+		}
+		return success;
 	}
 	run()
 	{
 		console.log('Ready');
 		watch(this.current_path, { recursive: true }, this.onChange.bind(this));
 	}
-	onChange(eventType, filename)
+	onChange(eventType, file_path)
 	{
 		if (eventType == "update")
 		{
-			var stat = fs.lstatSync(filename);
+			var stat = fs.lstatSync(file_path);
 			if (stat.isFile())
 			{
-				this.onChangeFile(filename);				
+				this.onChangeFile(file_path);
 			}
 		}
 	}
-	onChangeFile(filename)
+	onChangeFile(file_path)
 	{
-		var module = this.findModuleByFileName(filename);
+		var module = this.findModuleByFileName(file_path);
 		if (module == null)
 			return;
-		
-		this.onChangeFileInModule(module, filename);
+		this.onChangeFileInModule(module, file_path);
 	}
-	findModuleByFileName(filename)
+	findModuleByFileName(file_path)
 	{
 		for (var i=0; i<this.modules.length; i++)
 		{
 			var module = this.modules[i];
-			if (filename.indexOf(module.path) == 0) return module;
+			if (file_path.indexOf(module.path) == 0) return module;
 		}
 		return null;
 	}
-	onChangeFileInModule(module, filename)
+	onChangeFileInModule(module, file_path)
 	{
 		var lib_path = path.normalize(module.path + "/bay");
-		if (filename.indexOf(lib_path) == 0)
+		if (file_path.indexOf(lib_path) == 0)
 		{
-			this.compileFileInModule(module, filename);
+			this.compileFileInModule(module, file_path);
 		}
 	}
 	compileFileInModule(module, file_path)
 	{
 		var extname = path.extname(file_path).substr(1);
-		
 		if (extname == "bay")
 		{
 			console.log(file_path);
@@ -113,8 +128,6 @@ class App
 			}
 			
 		}
-		
-		
 	}
 	compileFile(module, file_path, lang_from, lang_to)
 	{
@@ -162,6 +175,10 @@ class App
 			content
 		);
 		console.log('=>' + save_path);
+		
+		/* Save file */
+		var dir_save_path = path.dirname(save_path);
+		shelljs.mkdir('-p', dir_save_path);
 		
 		fs.writeFileSync(save_path, res);
 	}
