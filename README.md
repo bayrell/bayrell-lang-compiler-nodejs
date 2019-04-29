@@ -2,7 +2,7 @@
 
 Install
 
-```npm install -g bayrell-lang-nodejs```
+```npm install -g bayrell-lang-compiler```
 
 Create **project.json** in local folder
 
