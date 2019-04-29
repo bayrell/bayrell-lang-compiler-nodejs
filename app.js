@@ -66,11 +66,6 @@ class App
 		}
 		return success;
 	}
-	run()
-	{
-		console.log('Ready');
-		watch(this.current_path, { recursive: true }, this.onChange.bind(this));
-	}
 	onChange(eventType, file_path)
 	{
 		if (eventType == "update")
@@ -181,6 +176,11 @@ class App
 		shelljs.mkdir('-p', dir_save_path);
 		
 		fs.writeFileSync(save_path, res);
+	}
+	watch()
+	{
+		console.log('Ready');
+		watch(this.current_path, { recursive: true }, this.onChange.bind(this));
 	}
 }
 

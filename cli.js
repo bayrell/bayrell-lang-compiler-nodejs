@@ -4,11 +4,11 @@ var cmd = process.argv[2];
 
 if (cmd == "watch")
 {
-	var Watch = require("./watch.js");
-	var app = new Watch.App( process.cwd() );
+	var App = require("./app.js");
+	var app = new App.App( process.cwd() );
 	if (app.loadConfig())
 	{
-		app.run();
+		app.watch();
 	}
 }
 
