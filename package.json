@@ -15,6 +15,10 @@
   },
   "main": "index.js",
   "name": "bayrell-lang-compiler",
-  "version": "0.1.0",
-  "dependencies": {}
+  "version": "0.1.1",
+  "dependencies": {
+	"bayrell-lang-nodejs": "^0.7.2",
+	"bayrell-parser-nodejs": "^0.7.2",
+	"bayrell-runtime-nodejs": "^0.7.2"
+  }
 }
