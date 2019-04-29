@@ -1,0 +1,20 @@
+{
+  "description": "Bayrell Lang Compiler for nodejs",
+  "license": "Apache-2.0",
+  "contributors": [
+    {
+      "name": "Ildar Bikmamatov",
+      "email": "support@bayrell.org"
+    }
+  ],
+  "files": [
+    "*.js"
+  ],
+  "bin": {
+    "bayrell-lang-nodejs": "./cli.js"
+  },
+  "main": "index.js",
+  "name": "bayrell-lang-compiler",
+  "version": "0.1.0",
+  "dependencies": {}
+}
