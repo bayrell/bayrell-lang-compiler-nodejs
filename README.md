@@ -12,6 +12,7 @@ Create **project.json** in local folder
 	"modules":
 	[
 		{
+			"name": "App",
 			"path": "./lib/App",
 			"lang": ["php", "es6"]
 		}
