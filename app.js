@@ -12,6 +12,7 @@ class Module
 {
 	constructor()
 	{
+		this.name = "";
 		this.path = "";
 		this.langs = [];
 	}
@@ -20,6 +21,27 @@ class Module
 
 class App
 {
+	
+	static getDirectoryListing(basedir)
+	{
+		var arr = fs.readdirSync(basedir);
+		return arr.sort().map( (s) => { return path.normalize(basedir + "/" + s) } );
+	}
+	static readDirectoryRecursive(basedir)
+	{
+		var res = [];
+		var arr = this.getDirectoryListing(basedir);
+		for (var i=0; i<arr.length; i++)
+		{
+			var file_path = arr[i];
+			res.push(file_path);
+			if (fs.lstatSync(file_path).isDirectory(file_path))
+			{
+				res = res.concat( this.readDirectoryRecursive(file_path) );
+			}
+		}
+		return res;
+	}
 	constructor(path)
 	{
 		this.context = Runtime.RuntimeUtils.createContext();
@@ -30,9 +52,10 @@ class App
 		this.translator_nodejs_factory = new BayrellLang.LangNodeJS.TranslatorNodeJSFactory(this.context);
 		this.translator_php_factory = new BayrellLang.LangPHP.TranslatorPHPFactory(this.context);
 	}
-	addModule(path, langs)
+	addModule(name, path, langs)
 	{
 		var module = new Module();
+		module.name = name;
 		module.path = path;
 		module.langs = langs;
 		this.modules.push(module);
@@ -42,7 +65,7 @@ class App
 		for (var i=0; i<obj.modules.length; i++)
 		{
 			var item = obj.modules[i];
-			this.addModule( path.normalize(this.current_path + "/" + item.path), item.lang );
+			this.addModule( item.name, path.normalize(this.current_path + "/" + item.path), item.lang );
 		}
 	}
 	loadConfig()
@@ -84,6 +107,15 @@ class App
 			return;
 		this.onChangeFileInModule(module, file_path);
 	}
+	findModuleByName(module_name)
+	{
+		for (var i=0; i<this.modules.length; i++)
+		{
+			var module = this.modules[i];
+			if (module.name == module_name) return module;
+		}
+		return null;
+	}
 	findModuleByFileName(file_path)
 	{
 		for (var i=0; i<this.modules.length; i++)
@@ -104,7 +136,7 @@ class App
 	compileFileInModule(module, file_path)
 	{
 		var extname = path.extname(file_path).substr(1);
-		if (extname == "bay")
+		if (extname == "bay" || extname == 'es6')
 		{
 			console.log(file_path);
 			
@@ -113,7 +145,7 @@ class App
 				for (var i=0; i<module.langs.length; i++)
 				{
 					var lang = module.langs[i];
-					this.compileFile(module, file_path, "bay", lang);
+					this.compileFile(module, file_path, extname, lang, true);
 				}
 				console.log('Ok');
 			}
@@ -124,7 +156,7 @@ class App
 			
 		}
 	}
-	compileFile(module, file_path, lang_from, lang_to)
+	compileFile(module, file_path, lang_from, lang_to, verbose)
 	{
 		var lib_path = path.normalize(module.path + "/bay");
 		var extname = path.extname(file_path);
@@ -137,50 +169,92 @@ class App
 		var save_ext = "";
 		var translator = null;
 		
-		if (lang_to == "php")
+		if (lang_from == "bay" && lang_to == "php")
 		{
 			save_dir = "php";
 			save_ext = ".php";
 			translator = this.translator_php_factory;
 		}
-		if (lang_to == "es6")
+		if (lang_from == "bay" && lang_to == "es6")
 		{
 			save_dir = "es6";
 			save_ext = ".js";
 			translator = this.translator_es6_factory;
 		}
-		if (lang_to == "nodejs")
+		if (lang_from == "bay" && lang_to == "nodejs")
 		{
 			save_dir = "nodejs";
 			save_ext = ".js";
 			translator = this.translator_nodejs_factory;
+		}
+		if (lang_from == "es6" && lang_to == "es6")
+		{
+			save_dir = "es6";
+			save_ext = ".js";
+			translator = null;
 		}
 		
 		if (save_dir == "" || save_ext == "")
 			return;
 		
 		var save_path = path.normalize(module.path + "/" + save_dir + "/" + dir_path + "/" + basename + save_ext);
-		
+	
 		/* Compile */
+		var res = "";
 		var content = fs.readFileSync(file_path).toString();
-		var res = BayrellLang.Utils.translateSource(
-			this.context, 
-			this.parser_bay_factory, 
-			translator,
-			content
-		);
-		console.log('=>' + save_path);
+		if (translator != null)
+		{
+			res = BayrellLang.Utils.translateSource(
+				this.context, 
+				this.parser_bay_factory, 
+				translator,
+				content
+			);
+			if (verbose) console.log('=>' + save_path);
+		}
+		else
+		{
+			res = content;
+		}
 		
 		/* Save file */
 		var dir_save_path = path.dirname(save_path);
 		shelljs.mkdir('-p', dir_save_path);
-		
 		fs.writeFileSync(save_path, res);
 	}
 	watch()
 	{
 		console.log('Ready');
 		watch(this.current_path, { recursive: true }, this.onChange.bind(this));
+	}
+	
+	compileModule(module_name)
+	{
+		var module = this.findModuleByName(module_name);
+		if (module == null)
+		{
+			console.log('Module %s not found', module_name);
+			return;
+		}
+		var lib_path = path.normalize(module.path + "/bay");
+		var files = App.readDirectoryRecursive(lib_path);
+		for (var i=0; i<files.length; i++)
+		{
+			var file_path = files[i];
+			if (fs.lstatSync(file_path).isFile(file_path))
+			{
+				console.log(file_path);
+				var extname = path.extname(file_path).substr(1);
+				if (extname == 'bay' || extname == 'es6')
+				{
+					for (var j=0; j<module.langs.length; j++)
+					{
+						var lang = module.langs[j];
+						this.compileFile(module, file_path, extname, lang, false);
+					}
+				}
+			}
+		}
 	}
 }
 
