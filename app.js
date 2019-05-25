@@ -244,7 +244,7 @@ class App
 			var file_path = files[i];
 			if (fs.lstatSync(file_path).isFile(file_path))
 			{
-				/*console.log(file_path);*/
+				console.log("File " + file_path);
 				var extname = path.extname(file_path).substr(1);
 				if (extname == 'bay' || extname == 'es6')
 				{
