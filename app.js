@@ -198,7 +198,7 @@ class App
 			return;
 		
 		var save_path = path.normalize(module.path + "/" + save_dir + "/" + dir_path + "/" + basename + save_ext);
-	
+		
 		/* Compile */
 		var res = "";
 		var content = fs.readFileSync(file_path).toString();
@@ -215,6 +215,7 @@ class App
 		else
 		{
 			res = content;
+			if (verbose) console.log('=>' + save_path);
 		}
 		
 		/* Save file */
@@ -243,7 +244,7 @@ class App
 			var file_path = files[i];
 			if (fs.lstatSync(file_path).isFile(file_path))
 			{
-				console.log(file_path);
+				/*console.log(file_path);*/
 				var extname = path.extname(file_path).substr(1);
 				if (extname == 'bay' || extname == 'es6')
 				{
