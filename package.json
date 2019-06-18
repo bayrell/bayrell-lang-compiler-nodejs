@@ -11,7 +11,7 @@
 		"*.js"
 	],
 	"bin": {
-		"bayrell-lang-compiler": "./cli.js"
+		"bayrell-lang-nodejs": "./cli.js"
 	},
 	"main": "index.js",
 	"name": "bayrell-lang-compiler",

@@ -74,7 +74,11 @@ class App
 		for (var i=0; i<arr.length; i++)
 		{
 			var module_name = arr[i];
-			this.addModule( module_name, path.normalize(dir_path + "/" + module_name) );
+			var module_path = dir_path + "/" + module_name;
+			if (fs.existsSync(module_path + "/module.json"))
+			{
+				this.addModule( module_name, path.normalize(module_path) );
+			}
 		}
 	}
 	
