@@ -22,6 +22,25 @@ else if (cmd == "modules")
 	}
 }
 
+else if (cmd == "make_symlink")
+{
+	var name = process.argv[3];
+	if (name == undefined)
+	{
+		console.log("Type module name");
+		process.exit();
+	}
+	app.makeSymlink(name);
+}
+
+else if (cmd == "make_symlinks")
+{
+	for (var i=0; i<app.modules.length; i++)
+	{
+		app.makeSymlink(app.modules[i].name);
+	}
+}
+
 else if (cmd == "make")
 {
 	var name = process.argv[3];
@@ -30,19 +49,39 @@ else if (cmd == "make")
 		console.log("Type module name");
 		process.exit();
 	}
-	app.compileModule(name);
+	
+	var lang = process.argv[4];
+	if (lang == undefined)
+	{
+		lang = ["php", "es6"]
+	}
+	else
+	{
+		lang = [ lang ];
+	}
+	app.compileModule(name, lang);
 }
 
 else if (cmd == "make_all")
 {
+	var lang = process.argv[3];
+	if (lang == undefined)
+	{
+		lang = ["php", "es6"]
+	}
+	else
+	{
+		lang = [ lang ];
+	}
+	
 	for (var i=0; i<app.modules.length; i++)
 	{
-		app.compileModule(app.modules[i].name);
+		app.compileModule(app.modules[i].name, lang);
 	}
 }
 
 else
 {
-	console.log( "Type " + process.argv[1] + " {watch|modules|make|make_all}" );
+	console.log( "Type " + process.argv[1] + " {watch|modules|make|make_all|make_symlinks|make_symlink}" );
 	console.log( "" );
 }

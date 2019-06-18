@@ -52,12 +52,11 @@ class App
 		this.translator_nodejs_factory = new BayrellLang.LangNodeJS.TranslatorNodeJSFactory(this.context);
 		this.translator_php_factory = new BayrellLang.LangPHP.TranslatorPHPFactory(this.context);
 	}
-	addModule(name, path, langs)
+	addModule(name, path)
 	{
 		var module = new Module();
 		module.name = name;
 		module.path = path;
-		module.langs = langs;
 		this.modules.push(module);
 	}
 	init(obj)
@@ -65,29 +64,30 @@ class App
 		for (var i=0; i<obj.modules.length; i++)
 		{
 			var item = obj.modules[i];
-			this.addModule( item.name, path.normalize(this.current_path + "/" + item.path), item.lang );
+			this.addModule( item.name, path.normalize(this.current_path + "/" + item.path) );
 		}
 	}
+	
+	scanModules(dir_path)
+	{
+		var arr = fs.readdirSync(dir_path).sort();
+		for (var i=0; i<arr.length; i++)
+		{
+			var module_name = arr[i];
+			this.addModule( module_name, path.normalize(dir_path + "/" + module_name) );
+		}
+	}
+	
 	loadConfig()
 	{
-		var json_path = this.current_path + "/project.json";
-		if (!fs.existsSync(json_path))
+		var json_data = fs.readFileSync('project.json');
+		var json = JSON.parse(json_data);
+		for (var i in json.modules)
 		{
-			console.log("Error. File " + json_path + " not found.");
-			return false;
+			var module_path = json.modules[i];
+			this.scanModules(this.current_path + module_path);
 		}
-		var success = false;
-		var content = fs.readFileSync(json_path).toString();
-		try
-		{
-			this.init( JSON.parse(content) );
-			success = true;
-		}
-		catch(e)
-		{
-			console.log(e.toString());
-		}
-		return success;
+		return true;
 	}
 	onChange(eventType, file_path)
 	{
@@ -118,12 +118,21 @@ class App
 	}
 	findModuleByFileName(file_path)
 	{
+		var sz = 0;
+		var find = null;
 		for (var i=0; i<this.modules.length; i++)
 		{
 			var module = this.modules[i];
-			if (file_path.indexOf(module.path) == 0) return module;
+			if (file_path.indexOf(module.path) == 0)
+			{
+				if (sz < module.path.length)
+				{
+					sz = module.path.length;
+					find = module;
+				}
+			}
 		}
-		return null;
+		return find;
 	}
 	onChangeFileInModule(module, file_path)
 	{
@@ -139,12 +148,13 @@ class App
 		if (extname == "bay" || extname == 'es6')
 		{
 			console.log(file_path);
+			var langs = ["php", "es6"];
 			
 			try
 			{
-				for (var i=0; i<module.langs.length; i++)
+				for (var i=0; i<langs.length; i++)
 				{
-					var lang = module.langs[i];
+					var lang = langs[i];
 					this.compileFile(module, file_path, extname, lang, true);
 				}
 				console.log('Ok');
@@ -158,6 +168,11 @@ class App
 	}
 	compileFile(module, file_path, lang_from, lang_to, verbose)
 	{
+		if (lang_to != "php" && lang_to != "es6" && lang_to != "nodejs")
+		{
+			return;
+		}
+		
 		var lib_path = path.normalize(module.path + "/bay");
 		var extname = path.extname(file_path);
 		var basename = path.basename(file_path, extname);
@@ -229,8 +244,9 @@ class App
 		watch(this.current_path, { recursive: true }, this.onChange.bind(this));
 	}
 	
-	compileModule(module_name)
+	compileModule(module_name, langs)
 	{
+		if (langs == undefined) langs = ["php", "es6"];
 		var module = this.findModuleByName(module_name);
 		if (module == null)
 		{
@@ -242,21 +258,55 @@ class App
 		for (var i=0; i<files.length; i++)
 		{
 			var file_path = files[i];
-			if (fs.lstatSync(file_path).isFile(file_path))
+			if (fs.lstatSync(file_path).isFile())
 			{
 				console.log("File " + file_path);
 				var extname = path.extname(file_path).substr(1);
 				if (extname == 'bay' || extname == 'es6')
 				{
-					for (var j=0; j<module.langs.length; j++)
+					for (var j=0; j<langs.length; j++)
 					{
-						var lang = module.langs[j];
+						var lang = langs[j];
 						this.compileFile(module, file_path, extname, lang, false);
 					}
 				}
 			}
 		}
 	}
+	
+	
+	makeSymlink(module_name)
+	{
+		var module = this.findModuleByName(module_name);
+		if (module == null)
+		{
+			console.log('Module %s not found', module_name);
+			return;
+		}
+		
+		var es6_path_src = path.normalize(module.path + "/es6");
+		var es6_path_dest = path.normalize(this.current_path + "/web/assets/" + module_name + "/es6");
+		var resources_path_src = path.normalize(module.path + "/resources");
+		var resources_path_dest = path.normalize(this.current_path + "/web/assets/" + module_name + "/resources");
+		
+		shelljs.mkdir('-p', this.current_path + "/web/assets/" + module_name );
+
+		if (fs.existsSync(es6_path_src))
+		{
+			if (fs.existsSync(es6_path_dest)) fs.unlinkSync(es6_path_dest);
+			fs.symlinkSync(es6_path_src, es6_path_dest);
+			console.log(es6_path_dest, "->", es6_path_src);
+		}
+		
+		if (fs.existsSync(resources_path_src))
+		{
+			if (fs.existsSync(resources_path_dest)) fs.unlinkSync(resources_path_dest);
+			fs.symlinkSync(resources_path_src, resources_path_dest);
+			console.log(resources_path_dest, "->", resources_path_src);
+		}
+		
+	}
+	
 }
 
 
