@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 
+var use = require('bayrell').use;
 var fs = require('fs');
 var path = require('path');
 var watch = require('node-watch');
 var shelljs = require('shelljs');
-var Runtime = require('bayrell-runtime-nodejs');
-var BayrellLang = require('bayrell-lang-nodejs');
 
 
 class Module 
@@ -42,16 +41,6 @@ class App
 		}
 		return res;
 	}
-	constructor(path)
-	{
-		this.context = Runtime.RuntimeUtils.createContext();
-		this.current_path = path;
-		this.modules = [];
-		this.parser_bay_factory = new BayrellLang.LangBay.ParserBayFactory(this.context);
-		this.translator_es6_factory = new BayrellLang.LangES6.TranslatorES6Factory(this.context);
-		this.translator_nodejs_factory = new BayrellLang.LangNodeJS.TranslatorNodeJSFactory(this.context);
-		this.translator_php_factory = new BayrellLang.LangPHP.TranslatorPHPFactory(this.context);
-	}
 	addModule(name, path)
 	{
 		var module = new Module();
@@ -74,11 +63,7 @@ class App
 		for (var i=0; i<arr.length; i++)
 		{
 			var module_name = arr[i];
-			var module_path = dir_path + "/" + module_name;
-			if (fs.existsSync(module_path + "/module.json"))
-			{
-				this.addModule( module_name, path.normalize(module_path) );
-			}
+			this.addModule( module_name, path.normalize(dir_path + "/" + module_name) );
 		}
 	}
 	
@@ -149,13 +134,14 @@ class App
 	compileFileInModule(module, file_path)
 	{
 		var extname = path.extname(file_path).substr(1);
-		if (extname == "bay" || extname == 'es6')
+		if (extname == "bay" || extname == 'es6' || extname == 'js')
 		{
 			console.log(file_path);
 			var langs = ["php", "es6"];
 			
 			try
 			{
+				this.compile_cache = {};
 				for (var i=0; i<langs.length; i++)
 				{
 					var lang = langs[i];
@@ -165,7 +151,16 @@ class App
 			}
 			catch(e)
 			{
-				console.log(e.toString());
+				var RuntimeException = use("Runtime.Exceptions.RuntimeException");
+				if (e instanceof RuntimeException)
+				{
+					console.log(e.toString());
+					console.log(e.stack);
+				}
+				else
+				{
+					throw e;
+				}
 			}
 			
 		}
@@ -192,23 +187,35 @@ class App
 		{
 			save_dir = "php";
 			save_ext = ".php";
-			translator = this.translator_php_factory;
+			translator = this.translator_php;
 		}
 		if (lang_from == "bay" && lang_to == "es6")
 		{
 			save_dir = "es6";
 			save_ext = ".js";
-			translator = this.translator_es6_factory;
+			translator = this.translator_es6;
 		}
 		if (lang_from == "bay" && lang_to == "nodejs")
 		{
 			save_dir = "nodejs";
 			save_ext = ".js";
-			translator = this.translator_nodejs_factory;
+			translator = this.translator_nodejs;
 		}
 		if (lang_from == "es6" && lang_to == "es6")
 		{
 			save_dir = "es6";
+			save_ext = ".js";
+			translator = null;
+		}
+		if (lang_from == "js" && lang_to == "es6")
+		{
+			save_dir = "es6";
+			save_ext = ".js";
+			translator = null;
+		}
+		if (lang_from == "js" && lang_to == "nodejs")
+		{
+			save_dir = "nodejs";
 			save_ext = ".js";
 			translator = null;
 		}
@@ -223,12 +230,7 @@ class App
 		var content = fs.readFileSync(file_path).toString();
 		if (translator != null)
 		{
-			res = BayrellLang.Utils.translateSource(
-				this.context, 
-				this.parser_bay_factory, 
-				translator,
-				content
-			);
+			res = this.translateSource(this.parser_bay, translator, content, file_path);
 			if (verbose) console.log('=>' + save_path);
 		}
 		else
@@ -242,10 +244,46 @@ class App
 		shelljs.mkdir('-p', dir_save_path);
 		fs.writeFileSync(save_path, res);
 	}
+	
+	translateSource(parser, translator, content, file_path)
+	{
+		var LangUtils = use("Bayrell.Lang.LangUtils");
+		var op_code = null;
+		if (this.compile_cache[file_path] == undefined)
+		{
+			if (this.is_context) op_code = LangUtils.parse(this.context, parser, content);
+			else op_code = LangUtils.parse(parser, content);
+			this.compile_cache[file_path] = op_code;
+		}
+		else op_code = this.compile_cache[file_path];
+		var res = null;
+		if (this.is_context) res = LangUtils.translate(this.context, translator, op_code);
+		else res = LangUtils.translate(translator, op_code);
+		return res;
+	}
+	
+	watchFilter(file_path)
+	{
+		for (var i=0; i<this.modules.length; i++)
+		{
+			var module = this.modules[i];
+			if (file_path.indexOf(module.path) == 0)
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	watch()
 	{
 		console.log('Ready');
-		watch(this.current_path, { recursive: true }, this.onChange.bind(this));
+		watch(
+			this.current_path + "/app", 
+			{ filter: this.watchFilter.bind(this), recursive: true },
+			this.onChange.bind(this)
+		);
 	}
 	
 	compileModule(module_name, langs)
@@ -266,8 +304,9 @@ class App
 			{
 				console.log("File " + file_path);
 				var extname = path.extname(file_path).substr(1);
-				if (extname == 'bay' || extname == 'es6')
+				if (extname == 'bay' || extname == 'es6' || extname == 'js')
 				{
+					this.compile_cache = {};
 					for (var j=0; j<langs.length; j++)
 					{
 						var lang = langs[j];
