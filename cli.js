@@ -20,26 +20,28 @@ var TranslatorES6 = use("Bayrell.Lang.LangES6.TranslatorES6");
 var TranslatorNode = use("Bayrell.Lang.LangNode.TranslatorNode");
 var TranslatorPHP = use("Bayrell.Lang.LangPHP.TranslatorPHP");
 
-
+/*
 app.is_context = true;
 use("Runtime._Map").is_ctx = app.is_context;
 use("Runtime._Collection").is_ctx = app.is_context;
 use("Runtime.rtl").is_ctx = app.is_context;
-
+*/
 
 app.context = Context.create
 (
 	null,
-	Collection.create(["Runtime", "Bayrell.Lang"]),
+	Collection.from(["Runtime", "Bayrell.Lang"]),
 	null
 );
 use("Runtime.RuntimeUtils").setContext(app.context);
+
 app.current_path = process.cwd();
 app.modules = [];
-app.parser_bay = new ParserBay(new Map());
-app.translator_es6 = new TranslatorES6(new Map());
-app.translator_nodejs = new TranslatorNode(new Map());
-app.translator_php = new TranslatorPHP(new Map);
+app.parser_bay = new ParserBay();
+app.translator_es6 = new TranslatorES6();
+app.translator_nodejs = new TranslatorNode();
+app.translator_php = new TranslatorPHP();
+
 if (!app.loadConfig())
 {
 	process.exit();

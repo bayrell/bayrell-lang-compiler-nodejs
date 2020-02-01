@@ -15,11 +15,11 @@
 	},
 	"main": "index.js",
 	"name": "bayrell-lang-compiler",
-	"version": "0.8.0-alpha.9",
+	"version": "0.8.0",
 	"dependencies": {
 		"bayrell": "^0.8.3",
-		"bayrell-lang-nodejs": "^0.8.0-alpha.9",
-		"bayrell-runtime-nodejs": "^0.8.0-alpha.9",
+		"bayrell-lang-nodejs": "^0.8.0",
+		"bayrell-runtime-nodejs": "^0.8.0",
 		"node-watch": "^0.6.2",
 		"shelljs": "^0.7.0"
 	}

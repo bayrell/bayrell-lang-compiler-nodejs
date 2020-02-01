@@ -134,7 +134,7 @@ class App
 	compileFileInModule(module, file_path)
 	{
 		var extname = path.extname(file_path).substr(1);
-		if (extname == "bay" || extname == 'es6' || extname == 'js')
+		if (extname == "bay" || extname == 'es6')
 		{
 			console.log(file_path);
 			var langs = ["php", "es6"];
@@ -207,18 +207,6 @@ class App
 			save_ext = ".js";
 			translator = null;
 		}
-		if (lang_from == "js" && lang_to == "es6")
-		{
-			save_dir = "es6";
-			save_ext = ".js";
-			translator = null;
-		}
-		if (lang_from == "js" && lang_to == "nodejs")
-		{
-			save_dir = "nodejs";
-			save_ext = ".js";
-			translator = null;
-		}
 		
 		if (save_dir == "" || save_ext == "")
 			return;
@@ -251,14 +239,11 @@ class App
 		var op_code = null;
 		if (this.compile_cache[file_path] == undefined)
 		{
-			if (this.is_context) op_code = LangUtils.parse(this.context, parser, content);
-			else op_code = LangUtils.parse(parser, content);
+			op_code = LangUtils.parse(this.context, parser, content);
 			this.compile_cache[file_path] = op_code;
 		}
 		else op_code = this.compile_cache[file_path];
-		var res = null;
-		if (this.is_context) res = LangUtils.translate(this.context, translator, op_code);
-		else res = LangUtils.translate(translator, op_code);
+		var res = LangUtils.translate(this.context, translator, op_code);
 		return res;
 	}
 	
@@ -304,7 +289,7 @@ class App
 			{
 				console.log("File " + file_path);
 				var extname = path.extname(file_path).substr(1);
-				if (extname == 'bay' || extname == 'es6' || extname == 'js')
+				if (extname == 'bay' || extname == 'es6')
 				{
 					this.compile_cache = {};
 					for (var j=0; j<langs.length; j++)
