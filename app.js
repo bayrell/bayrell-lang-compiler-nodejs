@@ -283,7 +283,7 @@ class App
 	{
 		console.log('Ready');
 		watch(
-			this.current_path + "/app", 
+			this.current_path, 
 			{ filter: this.watchFilter.bind(this), recursive: true },
 			this.onChange.bind(this)
 		);
