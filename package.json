@@ -2,10 +2,10 @@
 	"description": "Bayrell Lang Compiler for nodejs",
 	"license": "Apache-2.0",
 	"contributors": [
-	{
-		"name": "Ildar Bikmamatov",
-		"email": "support@bayrell.org"
-	}
+		{
+			"name": "Ildar Bikmamatov",
+			"email": "support@bayrell.org"
+		}
 	],
 	"files": [
 		"*.js"
@@ -15,7 +15,7 @@
 	},
 	"main": "index.js",
 	"name": "bayrell-lang-compiler",
-	"version": "0.8.0",
+	"version": "0.8.1",
 	"dependencies": {
 		"bayrell": "^0.8.3",
 		"bayrell-lang-nodejs": "^0.8.0",

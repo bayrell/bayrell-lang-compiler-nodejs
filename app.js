@@ -134,7 +134,7 @@ class App
 	compileFileInModule(module, file_path)
 	{
 		var extname = path.extname(file_path).substr(1);
-		if (extname == "bay" || extname == 'es6')
+		if (extname == "bay" || extname == 'es6' || extname == 'php' || extname == 'js')
 		{
 			console.log(file_path);
 			var langs = ["php", "es6"];
@@ -204,6 +204,24 @@ class App
 		if (lang_from == "es6" && lang_to == "es6")
 		{
 			save_dir = "es6";
+			save_ext = ".js";
+			translator = null;
+		}
+		if (lang_from == "php" && lang_to == "php")
+		{
+			save_dir = "php";
+			save_ext = ".php";
+			translator = null;
+		}
+		if (lang_from == "js" && lang_to == "es6")
+		{
+			save_dir = "es6";
+			save_ext = ".js";
+			translator = null;
+		}
+		if (lang_from == "js" && lang_to == "nodejs")
+		{
+			save_dir = "nodejs";
 			save_ext = ".js";
 			translator = null;
 		}
@@ -280,24 +298,41 @@ class App
 			console.log('Module %s not found', module_name);
 			return;
 		}
-		var lib_path = path.normalize(module.path + "/bay");
-		var files = App.readDirectoryRecursive(lib_path);
-		for (var i=0; i<files.length; i++)
+		
+		try
 		{
-			var file_path = files[i];
-			if (fs.lstatSync(file_path).isFile())
+			var lib_path = path.normalize(module.path + "/bay");
+			var files = App.readDirectoryRecursive(lib_path);
+			for (var i=0; i<files.length; i++)
 			{
-				console.log("File " + file_path);
-				var extname = path.extname(file_path).substr(1);
-				if (extname == 'bay' || extname == 'es6')
+				var file_path = files[i];
+				if (fs.lstatSync(file_path).isFile())
 				{
-					this.compile_cache = {};
-					for (var j=0; j<langs.length; j++)
+					console.log("File " + file_path);
+					var extname = path.extname(file_path).substr(1);
+					if (extname == 'bay' || extname == 'es6' || extname == 'php' || extname == 'js')
 					{
-						var lang = langs[j];
-						this.compileFile(module, file_path, extname, lang, false);
+						this.compile_cache = {};
+						for (var j=0; j<langs.length; j++)
+						{
+							var lang = langs[j];
+							this.compileFile(module, file_path, extname, lang, false);
+						}
 					}
 				}
+			}
+		}
+		catch(e)
+		{
+			var RuntimeException = use("Runtime.Exceptions.RuntimeException");
+			if (e instanceof RuntimeException)
+			{
+				console.log(e.toString());
+				console.log(e.stack);
+			}
+			else
+			{
+				throw e;
 			}
 		}
 	}

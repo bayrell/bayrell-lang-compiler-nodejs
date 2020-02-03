@@ -27,12 +27,7 @@ use("Runtime._Collection").is_ctx = app.is_context;
 use("Runtime.rtl").is_ctx = app.is_context;
 */
 
-app.context = Context.create
-(
-	null,
-	Collection.from(["Runtime", "Bayrell.Lang"]),
-	null
-);
+app.context = Context.create(null);
 use("Runtime.RuntimeUtils").setContext(app.context);
 
 app.current_path = process.cwd();
