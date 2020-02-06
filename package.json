@@ -18,8 +18,8 @@
 	"version": "0.8.2",
 	"dependencies": {
 		"bayrell": "^0.8.3",
-		"bayrell-lang-nodejs": "^0.8.0",
-		"bayrell-runtime-nodejs": "^0.8.0",
+		"bayrell-lang-nodejs": "~0.8.0",
+		"bayrell-runtime-nodejs": "~0.8.0",
 		"node-watch": "^0.6.2",
 		"shelljs": "^0.7.0"
 	}
