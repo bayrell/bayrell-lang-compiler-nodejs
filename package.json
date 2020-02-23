@@ -15,7 +15,7 @@
 	},
 	"main": "index.js",
 	"name": "bayrell-lang-compiler",
-	"version": "0.8.2",
+	"version": "0.8.3",
 	"dependencies": {
 		"bayrell": "^0.8.3",
 		"bayrell-lang-nodejs": "~0.8.0",
