@@ -347,25 +347,31 @@ class App
 			return;
 		}
 		
+		var assets_path = this.current_path + "/web/assets/" + module_name;
 		var es6_path_src = path.normalize(module.path + "/es6");
-		var es6_path_dest = path.normalize(this.current_path + "/web/assets/" + module_name + "/es6");
+		var es6_path_dest = path.normalize(assets_path + "/es6");
 		var resources_path_src = path.normalize(module.path + "/resources");
-		var resources_path_dest = path.normalize(this.current_path + "/web/assets/" + module_name + "/resources");
+		var resources_path_dest = path.normalize(assets_path + "/resources");
 		
+		/* Get relative paths */
+		var es6_path_src_relative = path.relative(assets_path, es6_path_src);
+		var resources_path_src_relative = path.relative(assets_path, resources_path_src);
+		
+		/* Make dir */
 		shelljs.mkdir('-p', this.current_path + "/web/assets/" + module_name );
 
 		if (fs.existsSync(es6_path_src))
 		{
+			console.log(es6_path_dest, "->", es6_path_src_relative);
 			if (fs.existsSync(es6_path_dest)) fs.unlinkSync(es6_path_dest);
-			fs.symlinkSync(es6_path_src, es6_path_dest);
-			console.log(es6_path_dest, "->", es6_path_src);
+			fs.symlinkSync(es6_path_src_relative, es6_path_dest);
 		}
 		
 		if (fs.existsSync(resources_path_src))
 		{
+			console.log(resources_path_dest, "->", resources_path_src_relative);
 			if (fs.existsSync(resources_path_dest)) fs.unlinkSync(resources_path_dest);
-			fs.symlinkSync(resources_path_src, resources_path_dest);
-			console.log(resources_path_dest, "->", resources_path_src);
+			fs.symlinkSync(resources_path_src_relative, resources_path_dest);
 		}
 		
 	}
