@@ -3,135 +3,48 @@
 var m_path = require("path");
 var use = require('bayrell').use;
 use.add_modules( __dirname + "/node_modules" );
-//use.add_src( __dirname + "/../app/src" );
+//use.add_src( __dirname + "/../lib" );
 
-var App = require("./app.js");
-
-//console.log( use("Runtime.Context").create );
-//exit();
-
-var cmd = process.argv[2];
-var app = new App.App( process.cwd() );
-var Context = use("Runtime.Context");
+/* Use */
+var CoreStruct = use("Runtime.CoreStruct");
 var Collection = use("Runtime.Collection");
-var Map = use("Runtime.Map");
-var ParserBay = use("Bayrell.Lang.LangBay.ParserBay");
-var TranslatorES6 = use("Bayrell.Lang.LangES6.TranslatorES6");
-var TranslatorNode = use("Bayrell.Lang.LangNode.TranslatorNode");
-var TranslatorPHP = use("Bayrell.Lang.LangPHP.TranslatorPHP");
+var Dict = use("Runtime.Dict");
+var Context = use("Runtime.Core.Context");
 
-/*
-app.is_context = true;
-use("Runtime._Map").is_ctx = app.is_context;
-use("Runtime._Collection").is_ctx = app.is_context;
-use("Runtime.rtl").is_ctx = app.is_context;
-*/
+/* Get enviroment */
+var env = process.env;
+env = Dict.from(env);
 
-app.context = Context.create(null);
-use("Runtime.RuntimeUtils").setContext(app.context);
+/* Create context */
+var context = Context.create(null, env);
 
-app.current_path = process.cwd();
-app.modules = [];
-app.parser_bay = new ParserBay();
-app.translator_es6 = new TranslatorES6();
-app.translator_nodejs = new TranslatorNode();
-app.translator_php = new TranslatorPHP();
+/* Set context params */
+context = context.copy(context, {
+	"start_time": Date.now(),
+	"cli_args": Collection.from(process.argv.slice(1)),
+	"base_path": process.cwd(),
+});
 
-if (!app.loadConfig())
-{
-	process.exit();
-}
+/* Set entry */
+context = context.constructor.setMainModule(context, context, "Bayrell.Bundler");
+context = context.constructor.setEntryPoint(context, context, "Runtime.Task.Entry");
 
+/* Set global context */
+use("Runtime.RuntimeUtils").setContext(context);
 
-if (cmd == "watch")
-{
-	app.watch();
-}
-
-else if (cmd == "modules")
-{
-	for (var i=0; i<app.modules.length; i++)
-	{
-		console.log(app.modules[i].name);
-	}
-}
-
-else if (cmd == "make_symlink")
-{
-	var name = process.argv[3];
-	if (name == undefined)
-	{
-		console.log("Type module name");
-		process.exit();
-	}
-	app.makeSymlink(name);
-}
-
-else if (cmd == "make_symlinks")
-{
-	for (var i=0; i<app.modules.length; i++)
-	{
-		app.makeSymlink(app.modules[i].name);
-	}
-}
-
-else if (cmd == "make")
-{
-	var name = process.argv[3];
-	if (name == undefined)
-	{
-		console.log("Type module name");
-		process.exit();
-	}
+/* Run app */
+(async () => {
 	
-	var lang = process.argv[4];
-	if (lang == undefined)
-	{
-		lang = ["php", "es6"]
-	}
-	else
-	{
-		lang = [ lang ];
-	}
 	try
 	{
-		app.compileModule(name, lang);
+		/* Prepare context */
+		context = await context.constructor.prepare(context, context);
+		
+		/* Run entry */
+		context = await context.constructor.run(context, context);
 	}
-	catch(e)
+	catch (e)
 	{
-		var RuntimeException = use("Runtime.Exceptions.RuntimeException");
-		if (e instanceof RuntimeException)
-		{
-			console.log(e.toString());
-			console.log(e.stack);
-		}
-		else
-		{
-			throw e;
-		}
+		console.log( e.stack );
 	}
-}
-
-else if (cmd == "make_all")
-{
-	var lang = process.argv[3];
-	if (lang == undefined)
-	{
-		lang = ["php", "es6"]
-	}
-	else
-	{
-		lang = [ lang ];
-	}
-	
-	for (var i=0; i<app.modules.length; i++)
-	{
-		app.compileModule(app.modules[i].name, lang);
-	}
-}
-
-else
-{
-	console.log( "Type " + process.argv[1] + " {watch|modules|make|make_all|make_symlinks|make_symlink}" );
-	console.log( "" );
-}
+})();
