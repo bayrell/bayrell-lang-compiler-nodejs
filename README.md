@@ -8,19 +8,52 @@ or local:
 
 ```npm install --save bayrell-lang-compile```
 
-Create **project.json** in local folder
+Example **project.json** in local folder of the project:
 
 ```
 {
 	"name": "Test",
-	"modules":
+	"cache": "var/bundler",
+	"build":
 	[
 		{
-			"name": "App",
-			"path": "./lib/App",
-			"lang": ["php", "es6"]
+			"dest": "web/js/runtime.js",
+			"modules":
+			[
+				"Runtime",
+				"Runtime.Core",
+				"Runtime.Web"
+			]
+		},
+		{
+			"dest": "web/js/app.js",
+			"modules":
+			[
+				"App"
+			],
+			"websocket": true
 		}
-	]
+	],
+	"plugins":
+	[
+		"Bayrell.Bundler.Plugins.BayLang"
+	],
+	"modules":
+	[
+		"lib"
+	],
+	"languages": ["php", "es6", "nodejs"],
+	"output": "web",
+	"watch":
+	{
+		"dir":
+		[
+			"lib",
+			"src"
+		],
+		"timeout": 500,
+		"websocket": true
+	}
 }
 ```
 
