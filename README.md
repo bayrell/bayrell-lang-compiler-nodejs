@@ -1,8 +1,12 @@
 # Bayrell Lang Compiler for NodeJS
 
-Install
+Install global:
 
-```npm install -g bayrell-lang-compiler```
+```npm install -g bayrell-lang-compiler --unsafe-perm```
+
+or local:
+
+```npm install --save bayrell-lang-compile```
 
 Create **project.json** in local folder
 
