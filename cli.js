@@ -37,9 +37,6 @@ use("Runtime.RuntimeUtils").setContext(context);
 	
 	try
 	{
-		/* Prepare context */
-		context = await context.constructor.prepare(context, context);
-		
 		/* Run entry */
 		context = await context.constructor.run(context, context);
 	}

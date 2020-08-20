@@ -15,7 +15,7 @@
 	},
 	"main": "index.js",
 	"name": "bayrell-lang-compiler",
-	"version": "0.10.1",
+	"version": "0.10.2",
 	"dependencies": {
 		"bayrell": "^0.10.0",
 		"bayrell-bundler-nodejs": "^0.10.1",
@@ -23,7 +23,7 @@
 		"bayrell-runtime-core-nodejs": "^0.10.0",
 		"bayrell-runtime-nodejs": "^0.10.0",
 		"bayrell-runtime-task-nodejs": "^0.10.0",
-		"node-watch": "^0.6.2",
+		"inotify": "^1.4.6",
 		"path": "^0.12.7",
 		"shelljs": "^0.7.0"
 	}
