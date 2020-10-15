@@ -1,5 +1,16 @@
 # Bayrell Lang Compiler for NodeJS
 
+Install NodeJS on Ubuntu:
+```
+curl -sL https://deb.nodesource.com/setup_10.x | sudo bash -
+apt-get install -y nodejs
+```
+
+Install g++ on Ubuntu for inotify
+```
+apt install g++ make
+```
+
 Install global:
 
 ```npm install -g bayrell-lang-compiler --unsafe-perm```
@@ -13,11 +24,14 @@ Example **project.json** in local folder of the project:
 ```
 {
 	"name": "Test",
+	"assets": "assets/",
 	"cache": "var/bundler",
-	"build":
+	"bundles":
 	[
 		{
+			"name": "runtime.js",
 			"dest": "web/js/runtime.js",
+			"lang": "es6",
 			"modules":
 			[
 				"Runtime",
@@ -26,7 +40,9 @@ Example **project.json** in local folder of the project:
 			]
 		},
 		{
+			"name": "app.js",
 			"dest": "web/js/app.js",
+			"lang": "es6",
 			"modules":
 			[
 				"App"
@@ -36,14 +52,18 @@ Example **project.json** in local folder of the project:
 	],
 	"plugins":
 	[
-		"Bayrell.Bundler.Plugins.BayLang"
+		"Bayrell.Bundler.Plugins.BayLang",
+		"Bayrell.Bundler.Plugins.Bundle",
+		"Bayrell.Bundler.Plugins.FilesPHP",
+		"Bayrell.Bundler.Plugins.FilesES6",
+		"Bayrell.Bundler.Plugins.FilesJS"
 	],
 	"modules":
 	[
+		"app",
 		"lib"
 	],
-	"languages": ["php", "es6", "nodejs"],
-	"output": "web",
+	"languages": ["php", "es6"],
 	"watch":
 	{
 		"dir":
