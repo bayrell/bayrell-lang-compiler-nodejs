@@ -3,21 +3,25 @@
 Install NodeJS on Ubuntu:
 ```
 curl -sL https://deb.nodesource.com/setup_10.x | sudo bash -
-apt-get install -y nodejs
+sudo apt-get install -y nodejs
 ```
 
 Install g++ on Ubuntu for inotify
 ```
-apt install g++ make
+sudo apt install g++ make
 ```
 
 Install global:
 
-```npm install -g bayrell-lang-compiler --unsafe-perm```
+```
+sudo npm install -g bayrell-lang-compiler --unsafe-perm
+```
 
 or local:
 
-```npm install --save bayrell-lang-compile```
+```
+npm install --save bayrell-lang-compile
+```
 
 Example **project.json** in local folder of the project:
 
